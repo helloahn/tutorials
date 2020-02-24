@@ -1,0 +1,5 @@
+*.o
+*.i
+__pycache__
+.data
+.log
