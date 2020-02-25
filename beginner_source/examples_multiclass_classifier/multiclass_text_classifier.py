@@ -14,6 +14,7 @@ TRAIN_VALID_RATIO = 0.95
 THRESHOLD = 0.5
 train_len = 243344
 test_len = 30418
+EMBED_DIM = 64
 
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 train_data_path = ".data/aclass/train_word.csv"
@@ -29,7 +30,9 @@ class TextSentiment(nn.Module):
     def __init__(self, vocab_size, embed_dim, num_class):
         super().__init__()
         self.embedding = nn.EmbeddingBag(vocab_size, embed_dim, sparse=True)
-        self.fc = nn.Linear(embed_dim, num_class)
+        self.fc = nn.Linear(embed_dim, embed_dim)
+        self.fc2 = nn.Linear(embed_dim, num_class)
+        # self.fc = nn.Linear(embed_dim, num_class)
         self.init_weights()
 
     def init_weights(self):
@@ -37,10 +40,13 @@ class TextSentiment(nn.Module):
         self.embedding.weight.data.uniform_(-initrange, initrange)
         self.fc.weight.data.uniform_(-initrange, initrange)
         self.fc.bias.data.zero_()
+        self.fc2.weight.data.uniform_(-initrange, initrange)
+        self.fc2.bias.data.zero_()
 
     def forward(self, text, offsets):
         embedded = self.embedding(text, offsets)
-        return self.fc(embedded)
+        # return self.fc(embedded)
+        return self.fc2(self.fc(embedded))
 
 
 ######################################################################
@@ -48,8 +54,8 @@ class TextSentiment(nn.Module):
 
 VOCAB_SIZE = len(vocab)
 EMBED_DIM = 32
-NUN_CLASS = 20
-model = TextSentiment(VOCAB_SIZE, EMBED_DIM, NUN_CLASS).to(device)
+NUM_CLASS = 20
+model = TextSentiment(VOCAB_SIZE, EMBED_DIM, NUM_CLASS).to(device)
 
 
 ######################################################################
